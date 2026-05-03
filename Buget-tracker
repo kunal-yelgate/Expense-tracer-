@@ -1,41 +1,73 @@
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class BudgetTracker {
-    private ArrayList<Double> expenses;
-    private ArrayList<Double> incomes;
-    private double balance;
+
+    private final List<Double> expenses;
+    private final List<Double> incomes;
 
     public BudgetTracker() {
-        expenses = new ArrayList<Double>();
-        incomes = new ArrayList<Double>();
-        balance = 0;
+        this.expenses = new ArrayList<>();
+        this.incomes = new ArrayList<>();
     }
 
+    // --- Mutators ---
+
     public void addExpense(double expense) {
+        if (expense <= 0) throw new IllegalArgumentException("Expense must be positive.");
         expenses.add(expense);
-        balance -= expense;
     }
 
     public void addIncome(double income) {
+        if (income <= 0) throw new IllegalArgumentException("Income must be positive.");
         incomes.add(income);
-        balance += income;
+    }
+
+    // --- Computed values (single source of truth) ---
+
+    public double getTotalExpenses() {
+        return expenses.stream().mapToDouble(Double::doubleValue).sum();
+    }
+
+    public double getTotalIncomes() {
+        return incomes.stream().mapToDouble(Double::doubleValue).sum();
     }
 
     public double getBalance() {
-        return balance;
+        return getTotalIncomes() - getTotalExpenses();
     }
 
-    public void printExpenses() {
-        System.out.println("Expenses: ");
-        for (double expense : expenses) {
-            System.out.println(expense);
-        }
+    // --- Read-only access to raw lists ---
+
+    public List<Double> getExpenses() {
+        return Collections.unmodifiableList(expenses);
     }
 
-    public void printIncomes() {
-        System.out.println("Incomes: ");
-        for (double income : incomes) {
-            System.out.println(income);
+    public List<Double> getIncomes() {
+        return Collections.unmodifiableList(incomes);
+    }
+
+    // --- Display ---
+
+    public void printSummary() {
+        System.out.println("===== Budget Summary =====");
+        printList("Incomes",  incomes);
+        printList("Expenses", expenses);
+        System.out.printf("Total Income:   $%.2f%n", getTotalIncomes());
+        System.out.printf("Total Expenses: $%.2f%n", getTotalExpenses());
+        System.out.printf("Balance:        $%.2f%n", getBalance());
+        System.out.println("==========================");
+    }
+
+    private void printList(String label, List<Double> items) {
+        System.out.println(label + ":");
+        if (items.isEmpty()) {
+            System.out.println("  (none)");
+        } else {
+            for (int i = 0; i < items.size(); i++) {
+                System.out.printf("  %d. $%.2f%n", i + 1, items.get(i));
+            }
         }
     }
 }
